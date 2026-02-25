@@ -1,0 +1,101 @@
+name: "Drupal Module Tests + Coverage"
+description: "Configures Composer dependencies, sets up a Drupal site, and runs PHPUnit with coverage."
+
+inputs:
+  drupal_version:
+    description: "Drupal version to install"
+    required: false
+    default: "10"
+  module_name:
+    description: "Name of the custom module"
+    required: true
+  module_vendor:
+    description: "Vendor name of the custom module"
+    required: true
+  module_dir:
+    description: "Directory path for the custom module"
+    required: false
+    default: "web/modules/acp-composer"
+  project_dir:
+    description: "Directory to install the Drupal project"
+    required: false
+    default: "drupal-site"
+  composer_repositories:
+    description: "List of repositories to add (supports YAML array format)"
+    required: false
+    default: ""
+  composer_gh_pat:
+    description: "GitHub Personal Access Token for Composer"
+    required: false
+  simpletest_db:
+    description: "Database URL for Simpletest"
+    required: false
+    default: "mysql://root:root@mysql:3306/drupal_test"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Trust GitHub SSH
+      shell: bash
+      run: |
+        mkdir -p ~/.ssh
+        ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+    - name: Run Node.js Setup Script
+      shell: bash
+      env:
+        DRUPAL_VERSION: ${{ inputs.drupal_version }}
+        DRUPAL_PROJECT_DIR: ${{ inputs.project_dir }}
+        DRUPAL_CUSTOM_MODULE_DIR: ${{ inputs.module_dir }}
+        CUSTOM_MODULE_NAME: ${{ inputs.module_name }}
+        CUSTOM_MODULE_VENDOR: ${{ inputs.module_vendor }}
+        COMPOSER_REPOSITORIES: ${{ inputs.composer_repositories }}
+        COMPOSER_GH_PAT: ${{ inputs.composer_gh_pat }}
+      # Uses github.action_path to reference the script bundled with your action
+      run: node ${{ github.action_path }}/scripts/setup-composer.js
+
+    - name: Composer Install
+      uses: ramsey/composer-install@v3
+      with:
+        working-directory: ${{ inputs.project_dir }}
+        composer-options: "--no-interaction --prefer-dist"
+
+    - name: Install Drupal Site
+      shell: bash
+      working-directory: ${{ inputs.project_dir }}
+      env:
+        SIMPLETEST_DB: ${{ inputs.simpletest_db }}
+      run: |
+        ./vendor/bin/drush site:install testing --db-url="${SIMPLETEST_DB}" --account-name=admin --account-pass=admin -y
+        ./vendor/bin/drush role:perm:add anonymous 'access content'
+
+    - name: Create Test Output Dirs
+      shell: bash
+      run: |
+        mkdir -p /tmp/coverage
+        mkdir -p /tmp/simpletest_browser_output
+
+    - name: Set Environment Variables for PHPUnit
+      shell: bash
+      run: |
+        echo 'MINK_DRIVER_ARGS_WEBDRIVER=["chrome", {"browserName": "chrome", "goog:chromeOptions": {"args": ["--headless=new", "--no-sandbox", "--disable-gpu", "--window-size=1280,1024", "--user-data-dir=/tmp/chrome-profile-${RANDOM}"]}}, "http://localhost:9515"]' >> $GITHUB_ENV
+
+    - name: Run PHP Server
+      shell: bash
+      working-directory: ${{ inputs.project_dir }}
+      # Note: Added `&` to run this in the background, otherwise it blocks the workflow step
+      run: php -S 127.0.0.1:80 -t web/ &
+
+    - name: Run PHPUnit with coverage (all tests)
+      shell: bash
+      working-directory: ${{ inputs.project_dir }}/web
+      run: |
+        ../vendor/bin/phpunit -c core/phpunit.xml.dist -v --color --testdox \
+        --coverage-html /tmp/coverage \
+        ../${{ inputs.module_dir }}/${{ inputs.module_name }}/tests/src
+
+    - name: Upload coverage artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: /tmp/coverage/
