@@ -35,11 +35,16 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Trust GitHub SSH
+    - name: 🔍 Debug File System
       shell: bash
       run: |
-        mkdir -p ~/.ssh
-        ssh-keyscan github.com >> ~/.ssh/known_hosts
+        echo "Action path: ${{ github.action_path }}"
+        if [ -d "${{ github.action_path }}" ]; then
+          echo "✅ Action directory exists."
+          ls -laR "${{ github.action_path }}"
+        else
+          echo "❌ Action directory NOT found at this path!"
+        fi
 
     - name: Run Node.js Setup Script
       shell: bash
@@ -51,7 +56,6 @@ runs:
         CUSTOM_MODULE_VENDOR: ${{ inputs.module_vendor }}
         COMPOSER_REPOSITORIES: ${{ inputs.composer_repositories }}
         COMPOSER_GH_PAT: ${{ inputs.composer_gh_pat }}
-      # Uses github.action_path to reference the script bundled with your action
       run: node ${{ github.action_path }}/scripts/setup-composer.js
 
     - name: Composer Install
@@ -83,7 +87,6 @@ runs:
     - name: Run PHP Server
       shell: bash
       working-directory: ${{ inputs.project_dir }}
-      # Note: Added `&` to run this in the background, otherwise it blocks the workflow step
       run: php -S 127.0.0.1:80 -t web/ &
 
     - name: Run PHPUnit with coverage (all tests)
