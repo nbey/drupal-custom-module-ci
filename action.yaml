@@ -41,6 +41,10 @@ runs:
     #     mkdir -p .github/_drupal_ci_scripts
     #     cp "${{ github.action_path }}/scripts/setup-composer.js" .github/_drupal_ci_scripts/setup-composer.js
 
+    - name: Show action commit
+      shell: bash
+      run: echo "${{ github.action_ref }}"
+
     - name: Debug action contents
       shell: bash
       run: |
