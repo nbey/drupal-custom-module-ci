@@ -47,11 +47,11 @@ for (const repo of repos) {
   let name, url;
   
   if (repo.includes(':')) {
-    [name, url] = repo.split(':');
+    [name, url] = repo.split(':', 1);
     if (name.includes('/')) name = name.split('/')[1];
   } else {
     name = repo.includes('/') ? repo.split('/')[1] : repo;
-    const org = repo.includes('/') ? repo.split('/')[0] : 'acpwebops';
+    const org = repo.includes('/') ? repo.split('/')[0] : env.CUSTOM_MODULE_REPOSITORY_ORG;
     url = `git@github.com:${org}/${name}.git`;
   }
 
@@ -63,4 +63,4 @@ for (const repo of repos) {
 }
 
 // 6. Require the custom module
-run(`composer require ${env.CUSTOM_MODULE_VENDOR}/${env.CUSTOM_MODULE_NAME}:${env.CUSTOM_MODULE_REPOSITORY_REF}`, { cwd: projectPath });
+run(`composer require ${env.CUSTOM_MODULE_VENDOR}/${env.CUSTOM_MODULE_NAME}:${env.CUSTOM_MODULE_REPOSITORY_REF} -W`, { cwd: projectPath });
