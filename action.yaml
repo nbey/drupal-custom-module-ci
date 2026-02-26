@@ -16,6 +16,10 @@ inputs:
     description: "Directory path for the custom module"
     required: false
     default: "web/modules/acp-composer"
+  module_workspace:
+    description: "Path where custom module is checked out"
+    required: false
+    default: "./"
   project_dir:
     description: "Directory to install the Drupal project"
     required: false
@@ -35,16 +39,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    # - name: 🚚 Bridge Action Script to Workspace
-    #   shell: bash
-    #   run: |
-    #     mkdir -p .github/_drupal_ci_scripts
-    #     cp "${{ github.action_path }}/scripts/setup-composer.js" .github/_drupal_ci_scripts/setup-composer.js
-
-    - name: Show action commit
-      shell: bash
-      run: echo "${{ github.action_ref }}"
-
     - uses: actions/checkout@v4
       with:
         repository: nbey/drupal-custom-module-ci
@@ -58,6 +52,7 @@ runs:
         DRUPAL_CUSTOM_MODULE_DIR: ${{ inputs.module_dir }}
         CUSTOM_MODULE_NAME: ${{ inputs.module_name }}
         CUSTOM_MODULE_VENDOR: ${{ inputs.module_vendor }}
+        CUSTOM_MODULE_WORKSPACE: ${{ inputs.module_workspace }}
         COMPOSER_REPOSITORIES: ${{ inputs.composer_repositories }}
         COMPOSER_GH_PAT: ${{ inputs.composer_gh_pat }}
       # run: node ${{ github.action_path }}/scripts/setup-composer.js
