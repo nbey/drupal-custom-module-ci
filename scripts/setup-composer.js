@@ -34,7 +34,8 @@ composerData.extra['installer-paths'] = {
 fs.writeFileSync(composerJsonPath, JSON.stringify(composerData, null, 4));
 
 // 4. Configure local custom module repository
-run(`composer config repositories.${env.CUSTOM_MODULE_NAME} '{"type": "path", "url": "${env.CUSTOM_MODULE_WORKSPACE}", "options": {"symlink": true}}'`, { cwd: projectPath });
+const repoConfig = { type: 'vcs', url: `git@github.com:${env.CUSTOM_MODULE_REPOSITORY_ORG}/${env.CUSTOM_MODULE_REPOSITORY_NAME}.git` , 'no-api': true };
+run(`composer config repositories.${env.CUSTOM_MODULE_NAME} '${JSON.stringify(repoConfig)}'`, { cwd: projectPath });
 
 // 5. Parse and add extra repositories
 const repoString = env.COMPOSER_REPOSITORIES || '';
@@ -62,4 +63,4 @@ for (const repo of repos) {
 }
 
 // 6. Require the custom module
-run(`composer require ${env.CUSTOM_MODULE_VENDOR}/${env.CUSTOM_MODULE_NAME}:@dev`, { cwd: projectPath });
+run(`composer require ${env.CUSTOM_MODULE_VENDOR}/${env.CUSTOM_MODULE_NAME}:${env.CUSTOM_MODULE_REPOSITORY_REF}`, { cwd: projectPath });
