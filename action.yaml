@@ -45,12 +45,10 @@ runs:
       shell: bash
       run: echo "${{ github.action_ref }}"
 
-    - name: Debug action contents
-      shell: bash
-      run: |
-        echo "Action path: ${{ github.action_path }}"
-        ls -la ${{ github.action_path }}
-        ls -la ${{ github.action_path }}/scripts || true
+    - uses: actions/checkout@v4
+      with:
+        repository: nbey/drupal-custom-module-ci
+        path: action-repo
 
     - name: Run Node.js Setup Script
       shell: bash
@@ -62,8 +60,8 @@ runs:
         CUSTOM_MODULE_VENDOR: ${{ inputs.module_vendor }}
         COMPOSER_REPOSITORIES: ${{ inputs.composer_repositories }}
         COMPOSER_GH_PAT: ${{ inputs.composer_gh_pat }}
-      run: node ${{ github.action_path }}/scripts/setup-composer.js
-      # run: node .github/_drupal_ci_scripts/setup-composer.js
+      # run: node ${{ github.action_path }}/scripts/setup-composer.js
+      run: node ./action-repo/scripts/setup-composer.js
 
     - name: Composer Install
       uses: ramsey/composer-install@v3
