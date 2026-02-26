@@ -9,13 +9,13 @@ inputs:
   module_name:
     description: "Name of the custom module"
     required: true
-  module_repo_name:
+  repo_name:
     description: "Name of the custom module repository"
     required: true
-  module_repo_org: # todo: set default
+  repo_org: # todo: set default
     description: "Name of the custom module repository organization"
     required: true
-  module_repo_ref:
+  repo_ref:
     description: "Name of the custom module ref to checkout"
     required: true
   module_vendor:
@@ -48,6 +48,9 @@ runs:
       with:
         repository: nbey/drupal-custom-module-ci
         path: action-repo
+    
+    - run: ls -alh
+      shell: bash
 
     - name: Run Node.js Setup Script
       shell: bash
@@ -56,13 +59,13 @@ runs:
         DRUPAL_PROJECT_DIR: ${{ inputs.project_dir }}
         DRUPAL_CUSTOM_MODULE_DIR: ${{ inputs.module_dir }}
         CUSTOM_MODULE_NAME: ${{ inputs.module_name }}
-        CUSTOM_MODULE_REPOSITORY_ORG: ${{ inputs.module_repo_org }}
-        CUSTOM_MODULE_REPOSITORY_NAME: ${{ inputs.module_repo_name }}
-        CUSTOM_MODULE_REPOSITORY_REF: ${{ inputs.module_repo_ref }}
+        CUSTOM_MODULE_REPOSITORY_ORG: ${{ inputs.repo_org }}
+        CUSTOM_MODULE_REPOSITORY_NAME: ${{ inputs.repo_name }}
+        CUSTOM_MODULE_REPOSITORY_REF: ${{ inputs.repo_ref }}
         CUSTOM_MODULE_VENDOR: ${{ inputs.module_vendor }}
         COMPOSER_REPOSITORIES: ${{ inputs.composer_repositories }}
         COMPOSER_GH_PAT: ${{ inputs.composer_gh_pat }}
-      # run: node ${{ github.action_path }}/scripts/setup-composer.js
+
       run: node ./action-repo/scripts/setup-composer.js
 
     - name: Composer Install
