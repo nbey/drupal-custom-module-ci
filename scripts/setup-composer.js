@@ -34,7 +34,7 @@ composerData.extra['installer-paths'] = {
 fs.writeFileSync(composerJsonPath, JSON.stringify(composerData, null, 4));
 
 // 4. Configure local custom module repository
-run(`composer config repositories.${env.CUSTOM_MODULE_NAME} '{"type": "path", "url": "../module-src", "options": {"symlink": true}}'`, { cwd: projectPath });
+run(`composer config repositories.${env.CUSTOM_MODULE_NAME} '{"type": "path", "url": "${env.CUSTOM_MODULE_WORKSPACE}", "options": {"symlink": true}}'`, { cwd: projectPath });
 
 // 5. Parse and add extra repositories
 const repoString = env.COMPOSER_REPOSITORIES || '';
