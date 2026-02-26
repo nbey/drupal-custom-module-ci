@@ -16,7 +16,7 @@ const projectPath = path.resolve(env.DRUPAL_PROJECT_DIR);
 run('composer config allow-plugins.tbachert/spi true', { cwd: projectPath });
 run('composer config minimum-stability dev', { cwd: projectPath });
 run('composer config prefer-stable true', { cwd: projectPath });
-run('composer require --dev drupal/core-dev drush/drush', { cwd: projectPath });
+run('composer require --dev drupal/core-dev drush/drush fakerphp/faker', { cwd: projectPath });
 
 if (env.COMPOSER_GH_PAT) {
   run(`composer config github-oauth.github.com ${env.COMPOSER_GH_PAT}`, { cwd: projectPath });
