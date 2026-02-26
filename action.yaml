@@ -35,16 +35,11 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: 🔍 Debug File System
+    - name: 🚚 Bridge Action Script to Workspace
       shell: bash
       run: |
-        echo "Action path: ${{ github.action_path }}"
-        if [ -d "${{ github.action_path }}" ]; then
-          echo "✅ Action directory exists."
-          ls -laR "${{ github.action_path }}"
-        else
-          echo "❌ Action directory NOT found at this path!"
-        fi
+        mkdir -p .github/_drupal_ci_scripts
+        cp "${{ github.action_path }}/scripts/setup-composer.js" .github/_drupal_ci_scripts/setup-composer.js
 
     - name: Run Node.js Setup Script
       shell: bash
@@ -56,7 +51,8 @@ runs:
         CUSTOM_MODULE_VENDOR: ${{ inputs.module_vendor }}
         COMPOSER_REPOSITORIES: ${{ inputs.composer_repositories }}
         COMPOSER_GH_PAT: ${{ inputs.composer_gh_pat }}
-      run: node ${{ github.action_path }}/scripts/setup-composer.js
+      # run: node ${{ github.action_path }}/scripts/setup-composer.js
+      run: node .github/_drupal_ci_scripts/setup-composer.js
 
     - name: Composer Install
       uses: ramsey/composer-install@v3
