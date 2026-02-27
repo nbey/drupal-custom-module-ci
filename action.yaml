@@ -49,6 +49,7 @@ runs:
         repository: nbey/drupal-custom-module-ci
         token: ${{ inputs.composer_gh_pat }}
         path: action-repo
+        ref: ${{ github.ref_name }}
     
     - run: ls -alh
       shell: bash
