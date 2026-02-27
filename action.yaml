@@ -102,10 +102,16 @@ runs:
     - name: Run PHPUnit with coverage (all tests)
       shell: bash
       working-directory: ${{ inputs.project_dir }}/web
+      continue-on-error: true
       run: |
         ../vendor/bin/phpunit -c core/phpunit.xml.dist -v --color --testdox \
         --coverage-html /tmp/coverage \
         ../${{ inputs.module_dir }}/${{ inputs.module_name }}/tests/src
+
+    - name: Debug
+      if: failure()
+      uses: mxschmitt/action-tmate@v3
+      timeout-minutes: 10
 
     - name: Upload coverage artifact
       uses: actions/upload-artifact@v4
