@@ -46,10 +46,7 @@ runs:
   steps:
     - uses: actions/checkout@v4
       with:
-        repository: nbey/drupal-custom-module-ci
-        token: ${{ inputs.composer_gh_pat }}
         path: action-repo
-        ref: debug
     
     - run: ls -alh
       shell: bash
