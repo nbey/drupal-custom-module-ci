@@ -44,11 +44,15 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/checkout@v4
+    - name: Checkout full action repository
+      uses: actions/checkout@v4
       with:
-        path: action-repo
-    
-    - run: ls -alh
+        repository: nbey/drupal-custom-module-ci
+        path: ${{ runner.temp }}/action-full-repo
+        token: ${{ github.token }}
+        clean: true
+
+    - run: ls -alh ${{ runner.temp }}/action-full-repo
       shell: bash
 
     - name: Run Node.js Setup Script
@@ -65,7 +69,7 @@ runs:
         COMPOSER_REPOSITORIES: ${{ inputs.composer_repositories }}
         COMPOSER_GH_PAT: ${{ inputs.composer_gh_pat }}
 
-      run: node ./action-repo/scripts/setup-composer.js
+      run: node ${{ runner.temp }}/action-full-repo/scripts/setup-composer.js
 
     - name: Composer Install
       uses: ramsey/composer-install@v3
