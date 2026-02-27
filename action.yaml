@@ -49,7 +49,7 @@ runs:
       with:
         repository: nbey/drupal-custom-module-ci
         path: ${{ runner.temp }}/action-full-repo
-        token: ${{ github.token }}
+        token: ${{ inputs.composer_gh_pat }}
         clean: true
 
     - run: ls -alh ${{ runner.temp }}/action-full-repo
