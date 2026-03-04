@@ -103,9 +103,11 @@ runs:
       shell: bash
       working-directory: ${{ inputs.project_dir }}/web
       run: |
+        module_dir="${{ inputs.module_dir }}"
+        module_dir="${module_dir#web/}"
         ../vendor/bin/phpunit -c core/phpunit.xml.dist -v --color --testdox \
         --coverage-html /tmp/coverage \
-        ../${{ inputs.module_dir }}/${{ inputs.module_name }}/tests/src
+        ${ module_dir }/${{ inputs.module_name }}/tests/src/
 
     - name: Upload coverage artifact
       uses: actions/upload-artifact@v4
