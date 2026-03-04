@@ -63,4 +63,4 @@ for (const repo of repos) {
 }
 
 // 6. Require the custom module
-run(`composer require ${env.CUSTOM_MODULE_VENDOR}/${env.CUSTOM_MODULE_NAME}:${env.CUSTOM_MODULE_REPOSITORY_REF} -W`, { cwd: projectPath });
+run(`composer require ${env.CUSTOM_MODULE_VENDOR}/${env.CUSTOM_REPO_NAME ?? env.CUSTOM_MODULE_NAME.replaceAll('_', '-')}:${env.CUSTOM_MODULE_REPOSITORY_REF} -W`, { cwd: projectPath });
