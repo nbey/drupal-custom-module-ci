@@ -35,7 +35,13 @@ fs.writeFileSync(composerJsonPath, JSON.stringify(composerData, null, 4));
 
 // 4. Configure local custom module repository
 console.log('Adding module repository to composer repositories')
-const repoConfig = { type: 'vcs', url: `git@github.com:${env.CUSTOM_MODULE_REPOSITORY_ORG}/${env.CUSTOM_MODULE_REPOSITORY_NAME}.git` , 'no-api': true };
+let repoConfig;
+if (env.CUSTOM_MODULE_WORKING_DIRECTORY) {
+  repoConfig = { type: 'path', url: env.CUSTOM_MODULE_WORKING_DIRECTORY, options: { symlink: true }};
+} else {
+  repoConfig = { type: 'vcs', url: `git@github.com:${env.CUSTOM_MODULE_REPOSITORY_ORG}/${env.CUSTOM_MODULE_REPOSITORY_NAME}.git` , 'no-api': true };
+}
+
 run(`composer config repositories.${env.CUSTOM_MODULE_NAME} '${JSON.stringify(repoConfig)}'`, { cwd: projectPath });
 
 // 5. Parse and add extra repositories

@@ -40,6 +40,10 @@ inputs:
     description: "Database URL for Simpletest"
     required: false
     default: "mysql://root:root@mysql:3306/drupal_test"
+  working_directory:
+    description: "The directory where the repository was checked out"
+    required: false
+    default: ${{ github.workspace }}
 
 runs:
   using: "composite"
@@ -64,6 +68,7 @@ runs:
         CUSTOM_MODULE_VENDOR: ${{ inputs.module_vendor }}
         COMPOSER_REPOSITORIES: ${{ inputs.composer_repositories }}
         COMPOSER_GH_PAT: ${{ inputs.composer_gh_pat }}
+        CUSTOM_MODULE_WORKING_DIRECTORY: ${{ inputs.working_directory }}
 
       run: node ${{ github.action_path }}/scripts/setup-composer.js
 
