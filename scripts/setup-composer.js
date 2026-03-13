@@ -48,12 +48,15 @@ console.log({
   repos
 });
 for (const repo of repos) {
-  let name, url;
+  let name, repo_type = 'vcs', url;
   
   if (repo.includes(':')) {
     let i = repo.indexOf(':');
     [name, url] = [repo.slice(0, i), repo.slice(i+1)];
     if (name.includes('/')) name = name.split('/')[1];
+    if (!url.match(/\.git$/)) {
+      repo_type = 'composer';
+    }
   } else {
     name = repo.includes('/') ? repo.split('/')[1] : repo;
     const org = repo.includes('/') ? repo.split('/')[0] : env.CUSTOM_MODULE_REPOSITORY_ORG;
@@ -61,13 +64,14 @@ for (const repo of repos) {
   }
   console.log({
     repo,
+    repo_type,
     name,
     url
   })
 
   if (name && url) {
     console.log(`Adding repository: ${name} (${url}) to composer repositories`);
-    const repoConfig = { type: 'vcs', url: url, 'no-api': true };
+    const repoConfig = { type: repo_type, url: url, 'no-api': true };
     run(`composer config repositories.${name} '${JSON.stringify(repoConfig)}'`, { cwd: projectPath });
   }
 }
