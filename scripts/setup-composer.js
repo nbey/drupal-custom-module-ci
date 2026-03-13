@@ -51,8 +51,8 @@ for (const repo of repos) {
   let name, url;
   
   if (repo.includes(':')) {
-    console.log(`${repo} includes :`)
-    [name, url] = repo.split(':', 1);
+    let i = repo.indexOf(':');
+    [name, url] = [repo.slice(0, i), repo.slice(i+1)];
     if (name.includes('/')) name = name.split('/')[1];
   } else {
     name = repo.includes('/') ? repo.split('/')[1] : repo;
