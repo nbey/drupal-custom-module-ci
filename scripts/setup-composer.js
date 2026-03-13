@@ -51,6 +51,7 @@ for (const repo of repos) {
   let name, url;
   
   if (repo.includes(':')) {
+    console.log(`${repo} includes :`)
     [name, url] = repo.split(':', 1);
     if (name.includes('/')) name = name.split('/')[1];
   } else {
@@ -58,6 +59,11 @@ for (const repo of repos) {
     const org = repo.includes('/') ? repo.split('/')[0] : env.CUSTOM_MODULE_REPOSITORY_ORG;
     url = `git@github.com:${org}/${name}.git`;
   }
+  console.log({
+    repo,
+    name,
+    url
+  })
 
   if (name && url) {
     console.log(`Adding repository: ${name} (${url}) to composer repositories`);
