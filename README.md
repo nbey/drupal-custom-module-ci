@@ -1,9 +1,11 @@
-# Requirements
+# Drupal Custom Module CI Action
+
+## Requirements
 
 - NodeJS
 
 
-# Usage
+## Usage
 ```
 name: Custom Module CI/CD
 
@@ -52,3 +54,10 @@ jobs:
             - drupal-module-repo
 
 ```
+
+
+## Troubleshooting:
+
+```Error: Failed to execute git clone --mirror -- 'git@github.com:acpwebops/acp-drupal_webapi.git' '/github/home/.cache/composer/vcs/git-github.com-acpwebops-acp-drupal-webapi.git/'```
+
+This typically means that the Github Secret for COMPOSER_PAT is not properly configured or expired.
