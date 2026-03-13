@@ -34,10 +34,12 @@ composerData.extra['installer-paths'] = {
 fs.writeFileSync(composerJsonPath, JSON.stringify(composerData, null, 4));
 
 // 4. Configure local custom module repository
+console.log('Adding module repository to composer repositories')
 const repoConfig = { type: 'vcs', url: `git@github.com:${env.CUSTOM_MODULE_REPOSITORY_ORG}/${env.CUSTOM_MODULE_REPOSITORY_NAME}.git` , 'no-api': true };
 run(`composer config repositories.${env.CUSTOM_MODULE_NAME} '${JSON.stringify(repoConfig)}'`, { cwd: projectPath });
 
 // 5. Parse and add extra repositories
+console.log(`ENV.COMPOSER_REPOSITORIES=${env.COMPOSER_REPOSITORIES ?? ''}`);
 const repoString = env.COMPOSER_REPOSITORIES || '';
 const repos = repoString.split('\n')
   .map(line => line.replace(/^- /, '').trim())
@@ -56,7 +58,7 @@ for (const repo of repos) {
   }
 
   if (name && url) {
-    console.log(`Adding repository: ${name}`);
+    console.log(`Adding repository: ${name} (${url}) to composer repositories`);
     const repoConfig = { type: 'vcs', url: url, 'no-api': true };
     run(`composer config repositories.${name} '${JSON.stringify(repoConfig)}'`, { cwd: projectPath });
   }
