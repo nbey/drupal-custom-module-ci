@@ -9,6 +9,9 @@ inputs:
   module_name:
     description: "Name of the custom module"
     required: true
+  repo_dir:
+    description: "Directory of the custom module repository within github runner workspace"
+    required: true
   repo_name:
     description: "Name of the custom module repository"
     required: true
@@ -44,12 +47,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/checkout@v4
-      with:
-        repository: nbey/drupal-custom-module-ci
-        path: action-repo
-    
-    - run: ls -alh
+    - run: ls -alh ${{ inputs.repo_dir }}
       shell: bash
 
     - name: Run Node.js Setup Script
@@ -66,7 +64,7 @@ runs:
         COMPOSER_REPOSITORIES: ${{ inputs.composer_repositories }}
         COMPOSER_GH_PAT: ${{ inputs.composer_gh_pat }}
 
-      run: node ./action-repo/scripts/setup-composer.js
+      run: node ${{ inputs.repo_dir }}/scripts/setup-composer.js
 
     - name: Composer Install
       uses: ramsey/composer-install@v3
