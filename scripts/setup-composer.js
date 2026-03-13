@@ -44,7 +44,9 @@ const repoString = env.COMPOSER_REPOSITORIES || '';
 const repos = repoString.split('\n')
   .map(line => line.replace(/^- /, '').trim())
   .filter(line => line.length > 0 && line !== '-');
-
+console.log({
+  repos
+});
 for (const repo of repos) {
   let name, url;
   
