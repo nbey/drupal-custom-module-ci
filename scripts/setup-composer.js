@@ -77,7 +77,7 @@ for (const repo of repos) {
 
   if (name && url) {
     console.log(`Adding repository: ${name} (${url}) to composer repositories`);
-    const repoConfig = { type: repo_type, url: url, 'no-api': true };
+    const repoConfig = { type: repo_type, url: url, 'no-api': true, canonical: false };
     run(`composer config repositories.${name} '${JSON.stringify(repoConfig)}'`, { cwd: projectPath });
   }
 }
