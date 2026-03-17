@@ -51,13 +51,7 @@ runs:
 
     - name: Fix git ownership
       shell: bash
-      run: git config --global --add safe.directory /__w/acp-drupal-abstracts/acp-drupal-abstracts
-
-    - name: Debug repo
-      shell: bash
-      run: |
-        git -C /__w/acp-drupal-abstracts/acp-drupal-abstracts branch --show-current
-        git -C /__w/acp-drupal-abstracts/acp-drupal-abstracts log --oneline -3
+      run: git config --global --add safe.directory '*'
 
     - name: Add GitHub to known_hosts
       shell: bash
@@ -70,7 +64,7 @@ runs:
       uses: actions/checkout@v4
       with:
         repository: nbey/drupal-custom-module-ci
-        ref: fix/module-checkout
+        ref: ${{ github.action_ref }}
         path: .drupal-ci
 
     - name: Run Node.js Setup Script
