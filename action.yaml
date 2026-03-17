@@ -61,7 +61,7 @@ runs:
       with:
         repository: nbey/drupal-custom-module-ci
         ref: fix/module-checkout
-        path: ${{ github.action_path }}
+        path: .drupal-ci
 
     - name: Run Node.js Setup Script
       shell: bash
@@ -78,7 +78,7 @@ runs:
         COMPOSER_GH_PAT: ${{ inputs.composer_gh_pat }}
         CUSTOM_MODULE_WORKING_DIRECTORY: ${{ inputs.working_directory }}
 
-      run: node ${{ github.action_path }}/scripts/setup-composer.js
+      run: node .drupal-ci/scripts/setup-composer.js
 
     - name: Composer Install
       uses: ramsey/composer-install@v3
