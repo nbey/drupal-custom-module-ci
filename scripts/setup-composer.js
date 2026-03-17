@@ -12,21 +12,22 @@ const run = (cmd, opts = {}) => {
 const projectPath = path.isAbsolute(env.DRUPAL_PROJECT_DIR) 
   ? env.DRUPAL_PROJECT_DIR 
   : path.resolve(process.env.GITHUB_WORKSPACE, env.DRUPAL_PROJECT_DIR);
+
 console.log({
   projectPath
 });
+
 run(`composer create-project drupal/recommended-project:^${env.DRUPAL_VERSION} ${env.DRUPAL_PROJECT_DIR} --no-interaction --no-install`);
-// const projectPath = path.resolve(env.DRUPAL_PROJECT_DIR);
+
+if (env.COMPOSER_GH_PAT) {
+  run(`composer config github-oauth.github.com ${env.COMPOSER_GH_PAT}`, { cwd: projectPath });
+}
 
 // 2. Base Composer Configurations
 run('composer config allow-plugins.tbachert/spi true', { cwd: projectPath });
 run('composer config minimum-stability dev', { cwd: projectPath });
 run('composer config prefer-stable true', { cwd: projectPath });
 run('composer require --dev drupal/core-dev drush/drush fakerphp/faker', { cwd: projectPath });
-
-if (env.COMPOSER_GH_PAT) {
-  run(`composer config github-oauth.github.com ${env.COMPOSER_GH_PAT}`, { cwd: projectPath });
-}
 
 // 3. Modify composer.json natively
 const composerJsonPath = path.join(projectPath, 'composer.json');
@@ -89,4 +90,4 @@ for (const repo of repos) {
 }
 
 // 6. Require the custom module
-run(`composer require ${env.CUSTOM_MODULE_VENDOR}/${env.CUSTOM_REPO_NAME ?? env.CUSTOM_MODULE_NAME.replaceAll('_', '-')}:${env.CUSTOM_MODULE_REPOSITORY_REF} -W`, { cwd: projectPath });
+run(`composer require ${env.CUSTOM_MODULE_VENDOR}/${env.CUSTOM_MODULE_NAME.replaceAll('_', '-')}:${env.CUSTOM_MODULE_REPOSITORY_REF} -W`, { cwd: projectPath });
