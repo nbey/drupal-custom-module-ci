@@ -2,6 +2,10 @@ name: "Drupal Module Tests + Coverage"
 description: "Configures Composer dependencies, sets up a Drupal site, and runs PHPUnit with coverage."
 
 inputs:
+  action_ref:
+    description: "Ref of the composite action repo to check out"
+    required: false
+    default: "main"
   drupal_version:
     description: "Drupal version to install"
     required: false
@@ -64,7 +68,7 @@ runs:
       uses: actions/checkout@v4
       with:
         repository: nbey/drupal-custom-module-ci
-        ref: ${{ github.action_ref }}
+        ref: ${{ inputs.action_ref }}
         path: .drupal-ci
 
     - name: Run Node.js Setup Script
