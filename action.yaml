@@ -49,6 +49,10 @@ runs:
   using: "composite"
   steps:
 
+    - name: Fix git ownership
+      shell: bash
+      run: git config --global --add safe.directory /__w/acp-drupal-abstracts/acp-drupal-abstracts
+
     - name: Debug repo
       shell: bash
       run: |
