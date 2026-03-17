@@ -55,7 +55,13 @@ runs:
         mkdir -p ~/.ssh
         ssh-keyscan github.com >> ~/.ssh/known_hosts
         echo "action_path: ${{ github.action_path }}"
-        find /home/runner/work/_actions/nbey -type d
+    
+    - name: Check out action repo
+      uses: actions/checkout@v4
+      with:
+        repository: nbey/drupal-custom-module-ci
+        ref: fix/module-checkout
+        path: ${{ github.action_path }}
 
     - name: Run Node.js Setup Script
       shell: bash
