@@ -9,8 +9,14 @@ const run = (cmd, opts = {}) => {
 };
 
 // 1. Initialize Project
+const projectPath = path.isAbsolute(env.DRUPAL_PROJECT_DIR) 
+  ? env.DRUPAL_PROJECT_DIR 
+  : path.resolve(process.env.GITHUB_WORKSPACE, env.DRUPAL_PROJECT_DIR);
+console.log({
+  projectPath
+});
 run(`composer create-project drupal/recommended-project:^${env.DRUPAL_VERSION} ${env.DRUPAL_PROJECT_DIR} --no-interaction --no-install`);
-const projectPath = path.resolve(env.DRUPAL_PROJECT_DIR);
+// const projectPath = path.resolve(env.DRUPAL_PROJECT_DIR);
 
 // 2. Base Composer Configurations
 run('composer config allow-plugins.tbachert/spi true', { cwd: projectPath });
