@@ -2,6 +2,10 @@ name: "Drupal Module Tests + Coverage"
 description: "Configures Composer dependencies, sets up a Drupal site, and runs PHPUnit with coverage."
 
 inputs:
+  action_ref:
+    description: "Ref of the composite action repo to check out"
+    required: false
+    default: "main"
   drupal_version:
     description: "Drupal version to install"
     required: false
@@ -28,7 +32,7 @@ inputs:
   project_dir: # todo: confirm if needed
     description: "Directory to install the Drupal project"
     required: false
-    default: "drupal-site"
+    default: "/tmp/drupal-site"
   composer_repositories:
     description: "List of repositories to add (supports YAML array format)"
     required: false
@@ -40,17 +44,32 @@ inputs:
     description: "Database URL for Simpletest"
     required: false
     default: "mysql://root:root@mysql:3306/drupal_test"
+  working_directory:
+    description: "The directory where the repository was checked out"
+    required: false
+    default: ${{ github.workspace }}
 
 runs:
   using: "composite"
   steps:
-    - uses: actions/checkout@v4
+
+    - name: Fix git ownership
+      shell: bash
+      run: git config --global --add safe.directory '*'
+
+    - name: Add GitHub to known_hosts
+      shell: bash
+      run: |
+        mkdir -p ~/.ssh
+        ssh-keyscan github.com >> ~/.ssh/known_hosts
+        echo "action_path: ${{ github.action_path }}"
+    
+    - name: Check out action repo
+      uses: actions/checkout@v4
       with:
         repository: nbey/drupal-custom-module-ci
-        path: action-repo
-    
-    - run: ls -alh
-      shell: bash
+        ref: ${{ inputs.action_ref }}
+        path: .drupal-ci
 
     - name: Run Node.js Setup Script
       shell: bash
@@ -65,8 +84,9 @@ runs:
         CUSTOM_MODULE_VENDOR: ${{ inputs.module_vendor }}
         COMPOSER_REPOSITORIES: ${{ inputs.composer_repositories }}
         COMPOSER_GH_PAT: ${{ inputs.composer_gh_pat }}
+        CUSTOM_MODULE_WORKING_DIRECTORY: ${{ inputs.working_directory }}
 
-      run: node ./action-repo/scripts/setup-composer.js
+      run: node .drupal-ci/scripts/setup-composer.js
 
     - name: Composer Install
       uses: ramsey/composer-install@v3
