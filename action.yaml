@@ -77,7 +77,7 @@ runs:
       shell: bash
       env:
         DRUPAL_VERSION: ${{ inputs.drupal_version }}
-        DRUPAL_PROJECT_DIR: ${{ github.workspace }}/${{ inputs.project_dir }}
+        DRUPAL_PROJECT_DIR: ${{ inputs.project_dir }}
         DRUPAL_CUSTOM_MODULE_DIR: ${{ inputs.module_dir }}
         CUSTOM_MODULE_NAME: ${{ inputs.module_name }}
         CUSTOM_MODULE_REPOSITORY_ORG: ${{ inputs.repo_org }}
