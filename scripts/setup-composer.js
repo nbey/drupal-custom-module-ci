@@ -43,7 +43,7 @@ fs.writeFileSync(composerJsonPath, JSON.stringify(composerData, null, 4));
 console.log('Adding module repository to composer repositories')
 let repoConfig;
 if (env.CUSTOM_MODULE_WORKING_DIRECTORY) {
-  repoConfig = { type: 'path', url: env.CUSTOM_MODULE_WORKING_DIRECTORY, canonical: true, options: { symlink: true }};
+  repoConfig = { type: 'path', url: env.CUSTOM_MODULE_WORKING_DIRECTORY, canonical: true };
 } else {
   repoConfig = { type: 'vcs', url: `git@github.com:${env.CUSTOM_MODULE_REPOSITORY_ORG}/${env.CUSTOM_MODULE_REPOSITORY_NAME}.git` , 'no-api': true };
 }
