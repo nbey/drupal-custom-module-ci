@@ -49,6 +49,12 @@ runs:
   using: "composite"
   steps:
 
+    - name: Debug repo
+      shell: bash
+      run: |
+        git -C /__w/acp-drupal-abstracts/acp-drupal-abstracts branch --show-current
+        git -C /__w/acp-drupal-abstracts/acp-drupal-abstracts log --oneline -3
+
     - name: Add GitHub to known_hosts
       shell: bash
       run: |
