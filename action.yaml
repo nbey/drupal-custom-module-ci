@@ -28,7 +28,7 @@ inputs:
   project_dir: # todo: confirm if needed
     description: "Directory to install the Drupal project"
     required: false
-    default: "drupal-site"
+    default: "/tmp/drupal-site"
   composer_repositories:
     description: "List of repositories to add (supports YAML array format)"
     required: false
