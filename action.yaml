@@ -134,3 +134,9 @@ runs:
       with:
         name: coverage-report
         path: /tmp/coverage/
+
+    - name: Upload simple browser artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: simpletest_browser_output
+        path: /tmp/simpletest_browser_output/
