@@ -113,6 +113,7 @@ runs:
       shell: bash
       run: |
         echo 'MINK_DRIVER_ARGS_WEBDRIVER=["chrome", {"browserName": "chrome", "goog:chromeOptions": {"args": ["--headless=new", "--no-sandbox", "--disable-gpu", "--window-size=1280,1024", "--user-data-dir=/tmp/chrome-profile-${RANDOM}"]}}, "http://localhost:9515"]' >> $GITHUB_ENV
+        echo 'SIMPLETEST_OUTPUT_DIRECTORY=/tmp/simpletest_browser_output' >> $GITHUB_ENV
 
     - name: Run PHP Server
       shell: bash
