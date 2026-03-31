@@ -112,8 +112,10 @@ runs:
     - name: Set Environment Variables for PHPUnit
       shell: bash
       run: |
+        mkdir -p /tmp/simpletest_browser_output
+      
         echo 'MINK_DRIVER_ARGS_WEBDRIVER=["chrome", {"browserName": "chrome", "goog:chromeOptions": {"args": ["--headless=new", "--no-sandbox", "--disable-gpu", "--window-size=1280,1024", "--user-data-dir=/tmp/chrome-profile-${RANDOM}"]}}, "http://localhost:9515"]' >> $GITHUB_ENV
-        echo 'SIMPLETEST_OUTPUT_DIRECTORY=/tmp/simpletest_browser_output' >> $GITHUB_ENV
+        echo 'BROWSERTEST_OUTPUT_DIRECTORY=/tmp/simpletest_browser_output' >> $GITHUB_ENV
         echo 'SYMFONY_DEPRECATIONS_HELPER=weak' >> $GITHUB_ENV
 
     - name: Run PHP Server
