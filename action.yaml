@@ -121,6 +121,7 @@ runs:
       run: php -S 127.0.0.1:80 -t web/ &
 
     - name: Run PHPUnit with coverage (all tests)
+      id: run_tests
       shell: bash
       working-directory: ${{ inputs.project_dir }}/web
       continue-on-error: true
@@ -142,3 +143,8 @@ runs:
       with:
         name: simpletest_browser_output
         path: /tmp/simpletest_browser_output/
+
+    - name: Fail the job if tests failed
+      shell: bash
+      if: steps.run_tests.outcome == 'failure'  # Re-fail the job after upload
+      run: exit 1
