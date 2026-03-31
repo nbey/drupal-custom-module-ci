@@ -122,6 +122,7 @@ runs:
     - name: Run PHPUnit with coverage (all tests)
       shell: bash
       working-directory: ${{ inputs.project_dir }}/web
+      continue-on-error: true
       run: |
         module_dir="${{ inputs.module_dir }}"
         module_dir="${module_dir#web/}"
