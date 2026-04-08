@@ -118,6 +118,11 @@ runs:
         echo 'BROWSERTEST_OUTPUT_DIRECTORY=/tmp/simpletest_browser_output' >> $GITHUB_ENV
         echo 'SYMFONY_DEPRECATIONS_HELPER=weak' >> $GITHUB_ENV
 
+    - name: Run ChromeDriver
+      shell: bash
+      working-directory: ${{ inputs.project_dir }}
+      run: chromedriver --port=9515 &
+      
     - name: Run PHP Server
       shell: bash
       working-directory: ${{ inputs.project_dir }}
