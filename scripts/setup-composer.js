@@ -77,6 +77,24 @@ function setComposerRepository(projectPath, name, config) {
   runComposer(['config', `repositories.${name}`, JSON.stringify(config)], { cwd: projectPath });
 }
 
+function buildDevRequirements() {
+  const drupalCoreDevVersion = env.DRUPAL_CORE_DEV_VERSION && env.DRUPAL_CORE_DEV_VERSION.trim()
+    ? env.DRUPAL_CORE_DEV_VERSION.trim()
+    : `^${requireEnv('DRUPAL_VERSION')}`;
+  const drushVersion = env.DRUSH_VERSION && env.DRUSH_VERSION.trim()
+    ? env.DRUSH_VERSION.trim()
+    : '^13.0';
+  const fakerVersion = env.FAKER_VERSION && env.FAKER_VERSION.trim()
+    ? env.FAKER_VERSION.trim()
+    : '^1.24';
+
+  return [
+    `drupal/core-dev:${drupalCoreDevVersion}`,
+    `drush/drush:${drushVersion}`,
+    `fakerphp/faker:${fakerVersion}`
+  ];
+}
+
 function parseRepositoryEntries(rawRepositories) {
   return (rawRepositories || '')
     .split('\n')
@@ -157,7 +175,7 @@ if (env.COMPOSER_GH_PAT && env.COMPOSER_GH_PAT.trim()) {
 runComposer(['config', 'allow-plugins.tbachert/spi', 'true'], { cwd: projectPath });
 runComposer(['config', 'minimum-stability', 'dev'], { cwd: projectPath });
 runComposer(['config', 'prefer-stable', 'true'], { cwd: projectPath });
-runComposer(['require', '--dev', 'drupal/core-dev', 'drush/drush', 'fakerphp/faker'], { cwd: projectPath });
+runComposer(['require', '--dev', ...buildDevRequirements()], { cwd: projectPath });
 
 setInstallerPath(composerJsonPath);
 

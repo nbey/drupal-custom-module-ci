@@ -2,6 +2,8 @@
 
 This composite GitHub Action creates a temporary Drupal project, installs your custom module through Composer, installs Drupal, and runs the module test suite with HTML coverage output.
 
+The repository also includes a fixture module and a self-test workflow so changes to the action can be exercised end to end inside GitHub Actions.
+
 ## What this action expects
 
 - A runner or container with PHP, Composer, Node.js, and the browser tooling needed for Drupal browser tests.
@@ -74,6 +76,9 @@ jobs:
 | `repo_ref` | Yes |  | Composer version or VCS reference passed to `composer require`. |
 | `module_package` | No | `<module_vendor>/<repo_name>` | Set this when the Composer package name does not match the repository name. |
 | `drupal_version` | No | `10` | Drupal major version used for `drupal/recommended-project`. |
+| `core_dev_version` | No | `^<drupal_version>` | Override the `drupal/core-dev` constraint when you need to pin a specific compatible series. |
+| `drush_version` | No | `^13.0` | Version constraint used when requiring Drush into the temporary project. |
+| `faker_version` | No | `^1.24` | Version constraint used when requiring Faker into the temporary project. |
 | `module_dir` | No | `web/modules/custom` | Install target for the custom module package. |
 | `project_dir` | No | `/tmp/drupal-site` | Temporary Drupal project path created during the job. |
 | `working_directory` | No | `${{ github.workspace }}` | Local path repository for the module under test. Override this only if the module is checked out somewhere else or if you want to force VCS resolution. |
@@ -97,6 +102,12 @@ Lines beginning with `#` are ignored.
 
 - HTML coverage is uploaded as the `coverage-report` artifact.
 - Browser test output is uploaded as the `simpletest_browser_output` artifact.
+
+## Development
+
+- The fixture module used to validate this action lives in `fixtures/drupal-custom-module-ci-fixture`.
+- The action self-test workflow is `.github/workflows/self-test.yml`.
+- When changing the action itself, keep `action_ref: ${{ github.sha }}` in the self-test so the internal checkout step exercises the current revision rather than `main`.
 
 ## Troubleshooting
 

@@ -1,0 +1,16 @@
+{
+    "name": "nbey/drupal-custom-module-ci-fixture",
+    "description": "Fixture Drupal module used to self-test the drupal-custom-module-ci action.",
+    "type": "drupal-custom-module",
+    "version": "dev-main",
+    "autoload": {
+        "psr-4": {
+            "Drupal\\drupal_custom_module_ci_fixture\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Drupal\\Tests\\drupal_custom_module_ci_fixture\\": "tests/src/"
+        }
+    }
+}

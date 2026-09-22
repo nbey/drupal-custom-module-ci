@@ -10,6 +10,18 @@ inputs:
     description: "Drupal version to install"
     required: false
     default: "10"
+  core_dev_version:
+    description: "Version constraint for drupal/core-dev. Defaults to ^<drupal_version>."
+    required: false
+    default: ""
+  drush_version:
+    description: "Version constraint for drush/drush"
+    required: false
+    default: "^13.0"
+  faker_version:
+    description: "Version constraint for fakerphp/faker"
+    required: false
+    default: "^1.24"
   module_name:
     description: "Drupal machine name of the custom module"
     required: true
@@ -81,6 +93,9 @@ runs:
       shell: bash
       env:
         DRUPAL_VERSION: ${{ inputs.drupal_version }}
+        DRUPAL_CORE_DEV_VERSION: ${{ inputs.core_dev_version }}
+        DRUSH_VERSION: ${{ inputs.drush_version }}
+        FAKER_VERSION: ${{ inputs.faker_version }}
         DRUPAL_PROJECT_DIR: ${{ inputs.project_dir }}
         DRUPAL_CUSTOM_MODULE_DIR: ${{ inputs.module_dir }}
         CUSTOM_MODULE_NAME: ${{ inputs.module_name }}

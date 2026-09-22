@@ -1,0 +1,5 @@
+name: Drupal Custom Module CI Fixture
+type: module
+description: Fixture module used to validate the Drupal custom module CI action.
+package: Testing
+core_version_requirement: ^10 || ^11
