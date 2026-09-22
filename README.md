@@ -1,18 +1,26 @@
 # Drupal Custom Module CI Action
 
-## Requirements
+This composite GitHub Action creates a temporary Drupal project, installs your custom module through Composer, installs Drupal, and runs the module test suite with HTML coverage output.
 
-- NodeJS
+## What this action expects
 
+- A runner or container with PHP, Composer, Node.js, and the browser tooling needed for Drupal browser tests.
+- Xdebug coverage enabled if you want a populated coverage report.
+- A database service reachable from the job container.
+- Your custom module repository already checked out in the job workspace when you want to test local changes from the current branch.
 
-## Usage
-```
-name: Custom Module CI/CD
+The example below uses Pantheon's CI container because it already provides the browser stack commonly needed for Drupal test runs.
+
+## Recommended usage
+
+```yaml
+name: Custom Module CI
 
 on:
   pull_request:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   test:
@@ -21,9 +29,7 @@ jobs:
       image: quay.io/pantheon-public/build-tools-ci:8.x-php8.2
       options: --user root
       env:
-        SIMPLETEST_DB: mysql://root:root@mysql:3306/drupal_test
-        SIMPLETEST_BASE_URL: http://localhost:80
-        XDEBUG_MODE: coverage 
+        XDEBUG_MODE: coverage
 
     services:
       mysql:
@@ -40,24 +46,70 @@ jobs:
           --health-retries=5
 
     steps:
-      - name: Run Drupal Testing Action
+      - name: Check out module repository
+        uses: actions/checkout@v4
+
+      - name: Run Drupal module CI action
         uses: nbey/drupal-custom-module-ci@main
         with:
-          module_name: drupal-module
+          module_name: drupal_module
           module_vendor: nbey
-          repo_name: "drupal-module"
-          repo_org: "nbey"
-          # Format for referencing GH branch commit is dev-BRANCH_NAME#SHA
-          repo_ref: "dev-${{ github.head_ref || github.ref_name }}#${{ github.sha }}"
+          repo_name: drupal-module
+          repo_org: nbey
+          repo_ref: dev-${{ github.head_ref || github.ref_name }}#${{ github.sha }}
           composer_gh_pat: ${{ secrets.COMPOSER_PAT }}
           composer_repositories: |
-            - drupal-module-repo
-
+            - nbey/shared-drupal-library
+            - private-packagist=https://repo.packagist.com/your-org/
 ```
 
+## Input reference
 
-## Troubleshooting:
+| Input | Required | Default | Notes |
+| --- | --- | --- | --- |
+| `module_name` | Yes |  | Drupal machine name. This is used to locate the tests at `MODULE/tests/src`. |
+| `module_vendor` | Yes |  | Composer vendor, for example `nbey`. |
+| `repo_name` | Yes |  | Repository name and default Composer package name suffix. |
+| `repo_org` | Yes |  | GitHub owner used for VCS repository resolution. |
+| `repo_ref` | Yes |  | Composer version or VCS reference passed to `composer require`. |
+| `module_package` | No | `<module_vendor>/<repo_name>` | Set this when the Composer package name does not match the repository name. |
+| `drupal_version` | No | `10` | Drupal major version used for `drupal/recommended-project`. |
+| `module_dir` | No | `web/modules/custom` | Install target for the custom module package. |
+| `project_dir` | No | `/tmp/drupal-site` | Temporary Drupal project path created during the job. |
+| `working_directory` | No | `${{ github.workspace }}` | Local path repository for the module under test. Override this only if the module is checked out somewhere else or if you want to force VCS resolution. |
+| `composer_repositories` | No |  | Additional repositories to register before install. |
+| `composer_gh_pat` | No |  | Token for private GitHub Composer/VCS dependencies. |
+| `simpletest_db` | No | `mysql://root:root@mysql:3306/drupal_test` | Database DSN for Drupal test installation. |
+| `action_ref` | No | `main` | Mostly useful when testing changes to this action itself. |
 
-```Error: Failed to execute git clone --mirror -- 'git@github.com:acpwebops/acp-drupal_webapi.git' '/github/home/.cache/composer/vcs/git-github.com-acpwebops-acp-drupal-webapi.git/'```
+## Additional repository formats
 
-This typically means that the Github Secret for COMPOSER_PAT is not properly configured or expired.
+`composer_repositories` accepts one entry per line. These are the supported patterns:
+
+- `repo-name`: resolves to `git@github.com:<repo_org>/repo-name.git`
+- `org/repo-name`: resolves to `git@github.com:org/repo-name.git`
+- `name=https://packages.example.com`: registers a Composer repository
+- `name:git@github.com:org/repo-name.git`: registers an explicit VCS repository
+
+Lines beginning with `#` are ignored.
+
+## Outputs and artifacts
+
+- HTML coverage is uploaded as the `coverage-report` artifact.
+- Browser test output is uploaded as the `simpletest_browser_output` artifact.
+
+## Troubleshooting
+
+If Composer fails with an error like this:
+
+```text
+Failed to execute git clone --mirror -- 'git@github.com:acpwebops/acp-drupal_webapi.git' ...
+```
+
+check these first:
+
+1. `composer_gh_pat` is present and not expired.
+2. The token has access to every private repository listed in `composer_repositories`.
+3. The repository URL format matches one of the supported patterns above.
+
+If your package installs correctly but the action cannot find tests, verify that `module_name` matches the Drupal module machine name rather than the repository slug.
