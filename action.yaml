@@ -87,6 +87,13 @@ runs:
         mkdir -p ~/.ssh
         touch ~/.ssh/known_hosts
         ssh-keygen -F github.com -f ~/.ssh/known_hosts >/dev/null || ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+
+    - name: Debug - Show action ref values before checkout
+      shell: bash
+      run: |
+        echo "Action ref input: ${{ inputs.action_ref }}"
+        echo "github.action_ref: ${{ github.action_ref }}"
+        echo "Computed ref: ${{ inputs.action_ref || github.action_ref || 'main' }}"
     
     - name: Check out action repo
       uses: actions/checkout@v4
@@ -94,14 +101,6 @@ runs:
         repository: nbey/drupal-custom-module-ci
         ref: ${{ inputs.action_ref || github.action_ref || 'main' }}
         path: .drupal-ci
-
-    - name: Debug - Show checked out ref
-      shell: bash
-      run: |
-        echo "Action ref input: ${{ inputs.action_ref }}"
-        echo "github.action_ref: ${{ github.action_ref }}"
-        echo "Computed ref: ${{ inputs.action_ref || github.action_ref || 'main' }}"
-        cd .drupal-ci && git describe --tags --always && cd -
 
     - name: Prepare Drupal project and Composer config
       shell: bash
