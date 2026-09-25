@@ -95,6 +95,14 @@ runs:
         ref: ${{ inputs.action_ref || github.action_ref || 'main' }}
         path: .drupal-ci
 
+    - name: Debug - Show checked out ref
+      shell: bash
+      run: |
+        echo "Action ref input: ${{ inputs.action_ref }}"
+        echo "github.action_ref: ${{ github.action_ref }}"
+        echo "Computed ref: ${{ inputs.action_ref || github.action_ref || 'main' }}"
+        cd .drupal-ci && git describe --tags --always && cd -
+
     - name: Prepare Drupal project and Composer config
       shell: bash
       env:
