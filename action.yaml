@@ -1,51 +1,69 @@
-name: "Drupal Module Tests + Coverage"
-description: "Configures Composer dependencies, sets up a Drupal site, and runs PHPUnit with coverage."
+name: "Drupal Module CI"
+description: "Creates a Drupal test project, installs a custom module through Composer, and runs PHPUnit coverage."
 
 inputs:
   action_ref:
-    description: "Ref of the composite action repo to check out"
+    description: "Git ref of this action repository to check out internally"
     required: false
     default: "main"
   drupal_version:
     description: "Drupal version to install"
     required: false
     default: "10"
+  drupal_module_name:
+    description: "Drupal module machine name, for example acp_2fa"
+    required: false
+    default: ""
   module_name:
-    description: "Name of the custom module"
-    required: true
+    description: "Deprecated alias for drupal_module_name"
+    required: false
+    default: ""
+  drupal_module_path:
+    description: "Installed module directory name under the Drupal module directory. Defaults to drupal_module_name."
+    required: false
+    default: ""
+  drupal_module_dir:
+    description: "Drupal modules parent directory where the package should be installed. When omitted, falls back to the legacy module_dir input."
+    required: false
+    default: ""
   repo_name:
-    description: "Name of the custom module repository"
+    description: "Repository name used for the module VCS repository"
     required: true
-  repo_org: # todo: set default
-    description: "Name of the custom module repository organization"
+  repo_org:
+    description: "GitHub organization or user that owns the module repository"
     required: true
   repo_ref:
-    description: "Name of the custom module ref to checkout"
+    description: "Composer version constraint or VCS ref to require"
     required: true
+  composer_package_name:
+    description: "Full Composer package name, for example acp/2fa. Defaults to <module_vendor>/<repo_name>."
+    required: false
+    default: ""
   module_vendor:
-    description: "Vendor name of the custom module"
-    required: true
+    description: "Composer vendor used when composer_package_name is not provided"
+    required: false
+    default: ""
   module_dir:
-    description: "Directory path for the custom module"
+    description: "Deprecated alias for drupal_module_dir"
     required: false
     default: "web/modules/acp-composer"
-  project_dir: # todo: confirm if needed
+  project_dir:
     description: "Directory to install the Drupal project"
     required: false
     default: "/tmp/drupal-site"
   composer_repositories:
-    description: "List of repositories to add (supports YAML array format)"
+    description: "Additional Composer repositories, one per line. Supports repo, org/repo, name=url, or name:git@... formats."
     required: false
     default: ""
   composer_gh_pat:
-    description: "GitHub Personal Access Token for Composer"
+    description: "GitHub token used for private Composer or VCS dependencies"
     required: false
   simpletest_db:
     description: "Database URL for Simpletest"
     required: false
     default: "mysql://root:root@mysql:3306/drupal_test"
   working_directory:
-    description: "The directory where the repository was checked out"
+    description: "Path to the checked-out module repository. Defaults to github.workspace for local path installation."
     required: false
     default: ${{ github.workspace }}
 
@@ -55,14 +73,16 @@ runs:
 
     - name: Fix git ownership
       shell: bash
-      run: git config --global --add safe.directory '*'
+      run: |
+        git config --global --add safe.directory "${GITHUB_WORKSPACE}"
+        git config --global --add safe.directory "${GITHUB_WORKSPACE}/.drupal-ci"
 
     - name: Add GitHub to known_hosts
       shell: bash
       run: |
         mkdir -p ~/.ssh
-        ssh-keyscan github.com >> ~/.ssh/known_hosts
-        echo "action_path: ${{ github.action_path }}"
+        touch ~/.ssh/known_hosts
+        ssh-keygen -F github.com -f ~/.ssh/known_hosts >/dev/null || ssh-keyscan -H github.com >> ~/.ssh/known_hosts
     
     - name: Check out action repo
       uses: actions/checkout@v4
@@ -71,17 +91,20 @@ runs:
         ref: ${{ inputs.action_ref }}
         path: .drupal-ci
 
-    - name: Run Node.js Setup Script
+    - name: Prepare Drupal project and Composer config
       shell: bash
       env:
         DRUPAL_VERSION: ${{ inputs.drupal_version }}
         DRUPAL_PROJECT_DIR: ${{ inputs.project_dir }}
-        DRUPAL_CUSTOM_MODULE_DIR: ${{ inputs.module_dir }}
+        DRUPAL_CUSTOM_MODULE_DIR: ${{ inputs.drupal_module_dir || inputs.module_dir }}
+        DRUPAL_MODULE_NAME: ${{ inputs.drupal_module_name || inputs.module_name }}
+        DRUPAL_MODULE_PATH: ${{ inputs.drupal_module_path }}
         CUSTOM_MODULE_NAME: ${{ inputs.module_name }}
         CUSTOM_MODULE_REPOSITORY_ORG: ${{ inputs.repo_org }}
         CUSTOM_MODULE_REPOSITORY_NAME: ${{ inputs.repo_name }}
         CUSTOM_MODULE_REPOSITORY_REF: ${{ inputs.repo_ref }}
         CUSTOM_MODULE_VENDOR: ${{ inputs.module_vendor }}
+        COMPOSER_PACKAGE_NAME: ${{ inputs.composer_package_name }}
         COMPOSER_REPOSITORIES: ${{ inputs.composer_repositories }}
         COMPOSER_GH_PAT: ${{ inputs.composer_gh_pat }}
         CUSTOM_MODULE_WORKING_DIRECTORY: ${{ inputs.working_directory }}
@@ -116,24 +139,45 @@ runs:
       
         echo 'MINK_DRIVER_ARGS_WEBDRIVER=["chrome", {"browserName": "chrome", "goog:chromeOptions": {"args": ["--headless=new", "--no-sandbox", "--disable-gpu", "--window-size=1280,1024", "--user-data-dir=/tmp/chrome-profile-${RANDOM}"]}}, "http://localhost:9515"]' >> $GITHUB_ENV
         echo 'BROWSERTEST_OUTPUT_DIRECTORY=/tmp/simpletest_browser_output' >> $GITHUB_ENV
+        echo 'SIMPLETEST_BASE_URL=http://127.0.0.1' >> $GITHUB_ENV
         echo 'SYMFONY_DEPRECATIONS_HELPER=weak' >> $GITHUB_ENV
 
     - name: Run PHP Server
       shell: bash
       working-directory: ${{ inputs.project_dir }}
-      run: php -S 127.0.0.1:80 -t web/ &
+      run: |
+        php -S 127.0.0.1:80 -t web/ >/tmp/drupal-php-server.log 2>&1 &
 
-    - name: Run PHPUnit with coverage (all tests)
+        for attempt in {1..30}; do
+          if curl --silent --fail http://127.0.0.1 >/dev/null; then
+            exit 0
+          fi
+
+          sleep 1
+        done
+
+        echo "Drupal PHP server did not become ready in time."
+        cat /tmp/drupal-php-server.log || true
+        exit 1
+
+    - name: Run PHPUnit with coverage
       id: run_tests
       shell: bash
       working-directory: ${{ inputs.project_dir }}/web
       continue-on-error: true
       run: |
-        module_dir="${{ inputs.module_dir }}"
+        module_dir="${{ inputs.drupal_module_dir || inputs.module_dir }}"
+        module_path="${{ inputs.drupal_module_path || inputs.drupal_module_name || inputs.module_name }}"
+
+        if [ -z "${module_path}" ]; then
+          echo "Missing drupal_module_path or drupal_module_name/module_name input."
+          exit 1
+        fi
+
         module_dir="${module_dir#web/}"
         ../vendor/bin/phpunit -c core/phpunit.xml.dist -v --color --testdox \
         --coverage-html /tmp/coverage \
-        ${module_dir}/${{ inputs.module_name }}/tests/src/
+        "${module_dir}/${module_path}/tests/src/"
 
     - name: Upload coverage artifact
       uses: actions/upload-artifact@v4

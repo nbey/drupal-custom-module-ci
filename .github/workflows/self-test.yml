@@ -1,0 +1,55 @@
+name: Self Test
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  action-self-test:
+    runs-on: ubuntu-latest
+    container:
+      image: quay.io/pantheon-public/build-tools-ci:8.x-php8.2
+      options: --user root
+      env:
+        XDEBUG_MODE: coverage
+
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: drupal_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run action against fixture module
+        uses: ./
+        with:
+          action_ref: ${{ github.sha }}
+          drupal_module_name: drupal_custom_module_ci_fixture
+          drupal_module_path: drupal-custom-module-ci-fixture
+          drupal_module_dir: web/modules/custom
+          composer_package_name: nbey/drupal-custom-module-ci-fixture
+          repo_name: drupal-custom-module-ci-fixture
+          repo_org: nbey
+          repo_ref: dev-main
+          working_directory: ${{ github.workspace }}/fixtures/drupal-custom-module-ci-fixture
