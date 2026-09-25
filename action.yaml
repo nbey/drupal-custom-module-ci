@@ -117,6 +117,54 @@ runs:
         working-directory: ${{ inputs.project_dir }}
         composer-options: "--no-interaction --prefer-dist"
 
+    - name: Collect module diagnostics
+      shell: bash
+      working-directory: ${{ inputs.project_dir }}
+      run: |
+        module_dir="${{ inputs.drupal_module_dir || inputs.module_dir }}"
+        module_path="${{ inputs.drupal_module_path || inputs.drupal_module_name || inputs.module_name }}"
+        working_directory="${{ inputs.working_directory }}"
+        package_name="${{ inputs.composer_package_name }}"
+
+        if [ -z "${package_name}" ]; then
+          legacy_module_name="${{ inputs.module_name || inputs.drupal_module_name }}"
+          package_name="${{ inputs.module_vendor }}/$(printf '%s' "${legacy_module_name}" | tr '_' '-')"
+        fi
+
+        module_dir="${module_dir#web/}"
+        tests_path="web/${module_dir}/${module_path}/tests/src"
+        diagnostics_file="/tmp/drupal-ci-module-diagnostics.txt"
+
+        {
+          echo "Computed Drupal module directory: ${module_dir}"
+          echo "Computed Drupal module path: ${module_path}"
+          echo "Expected PHPUnit tests path: ${tests_path}"
+          echo "Composer package name: ${package_name}"
+          echo "Working directory: ${working_directory}"
+          echo
+
+          if [ -f "${working_directory}/composer.json" ]; then
+            echo '[working directory composer.json]'
+            php -r '$composer = json_decode(file_get_contents($argv[1]), true); echo "name=" . ($composer["name"] ?? "") . PHP_EOL; echo "installer-name=" . ($composer["extra"]["installer-name"] ?? "") . PHP_EOL;' "${working_directory}/composer.json" || true
+            echo
+          fi
+
+          echo '[composer show]'
+          composer show "${package_name}" || true
+          echo
+
+          echo '[web/modules tree]'
+          find web/modules -maxdepth 3 -type d | sort || true
+          echo
+
+          echo "[listing web/${module_dir}]"
+          ls -la "web/${module_dir}" || true
+          echo
+
+          echo "[listing web/${module_dir}/${module_path}]"
+          ls -la "web/${module_dir}/${module_path}" || true
+        } | tee "${diagnostics_file}"
+
     - name: Install Drupal Site
       shell: bash
       working-directory: ${{ inputs.project_dir }}
@@ -168,22 +216,37 @@ runs:
       run: |
         module_dir="${{ inputs.drupal_module_dir || inputs.module_dir }}"
         module_path="${{ inputs.drupal_module_path || inputs.drupal_module_name || inputs.module_name }}"
+        tests_path="${module_dir#web/}/${module_path}/tests/src"
 
         if [ -z "${module_path}" ]; then
           echo "Missing drupal_module_path or drupal_module_name/module_name input."
           exit 1
         fi
 
-        module_dir="${module_dir#web/}"
+        if [ ! -d "${tests_path}" ]; then
+          echo "Resolved PHPUnit tests path does not exist: ${tests_path}"
+          echo "Module diagnostics:"
+          cat /tmp/drupal-ci-module-diagnostics.txt || true
+          exit 1
+        fi
+
         ../vendor/bin/phpunit -c core/phpunit.xml.dist -v --color --testdox \
         --coverage-html /tmp/coverage \
-        "${module_dir}/${module_path}/tests/src/"
+        "${tests_path}"
 
     - name: Upload coverage artifact
       uses: actions/upload-artifact@v4
       with:
         name: coverage-report
         path: /tmp/coverage/
+
+    - name: Upload module diagnostics artifact
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: drupal-ci-module-diagnostics
+        path: /tmp/drupal-ci-module-diagnostics.txt
+        if-no-files-found: ignore
 
     - name: Upload simple browser artifacts
       uses: actions/upload-artifact@v4
