@@ -66,6 +66,10 @@ inputs:
     description: "Path to the checked-out module repository. Defaults to github.workspace for local path installation."
     required: false
     default: ${{ github.workspace }}
+  debug:
+    description: "Enable verbose module path diagnostics output and artifacts"
+    required: false
+    default: "false"
 
 runs:
   using: "composite"
@@ -118,6 +122,7 @@ runs:
         composer-options: "--no-interaction --prefer-dist"
 
     - name: Collect module diagnostics
+      if: ${{ inputs.debug == 'true' }}
       shell: bash
       working-directory: ${{ inputs.project_dir }}
       run: |
@@ -247,7 +252,7 @@ runs:
         path: /tmp/coverage/
 
     - name: Upload module diagnostics artifact
-      if: always()
+      if: ${{ inputs.debug == 'true' }}
       uses: actions/upload-artifact@v4
       with:
         name: drupal-ci-module-diagnostics
