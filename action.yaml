@@ -5,7 +5,7 @@ inputs:
   action_ref:
     description: "Git ref of this action repository to check out internally"
     required: false
-    default: "main"
+    default: ""
   drupal_version:
     description: "Drupal version to install"
     required: false
@@ -88,7 +88,7 @@ runs:
       uses: actions/checkout@v4
       with:
         repository: nbey/drupal-custom-module-ci
-        ref: ${{ inputs.action_ref }}
+        ref: ${{ inputs.action_ref || github.action_ref || 'main' }}
         path: .drupal-ci
 
     - name: Prepare Drupal project and Composer config
