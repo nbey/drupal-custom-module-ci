@@ -99,7 +99,8 @@ runs:
       shell: bash
       env:
         TEST_REF: ${{ inputs.action_ref || github.action_ref || 'main' }}
-      run: echo "Ref evaluated in env/with context: $TEST_REF"
+      run: |
+        echo "Ref evaluated in env/with context: $TEST_REF"
 
     - name: Debug - Show action ref values before checkout
       shell: bash
