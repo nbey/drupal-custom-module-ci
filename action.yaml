@@ -143,6 +143,12 @@ runs:
           echo "Working directory: ${working_directory}"
           echo
 
+          if [ -f "composer.json" ]; then
+            echo '[project composer.json]'
+            cat composer.json
+            echo
+          fi
+
           if [ -f "${working_directory}/composer.json" ]; then
             echo '[working directory composer.json]'
             php -r '$composer = json_decode(file_get_contents($argv[1]), true); echo "name=" . ($composer["name"] ?? "") . PHP_EOL; echo "installer-name=" . ($composer["extra"]["installer-name"] ?? "") . PHP_EOL;' "${working_directory}/composer.json" || true
