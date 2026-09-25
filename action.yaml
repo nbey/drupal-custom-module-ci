@@ -91,9 +91,12 @@ runs:
     - name: Debug - Show action ref values before checkout
       shell: bash
       run: |
-        echo "Action ref input: ${{ inputs.action_ref }}"
-        echo "github.action_ref: ${{ github.action_ref }}"
-        echo "Computed ref: ${{ inputs.action_ref || github.action_ref || 'main' }}"
+        echo "inputs.action_ref: '${{ inputs.action_ref }}'"
+        echo "github.action_ref: '${{ github.action_ref }}'"
+        echo "Computed ref expression: '${{ inputs.action_ref || github.action_ref || 'main' }}'"
+        ref="${{ inputs.action_ref || github.action_ref || 'main' }}"
+        echo "Final ref value: '$ref'"
+        echo "Ref is empty: $([ -z '$ref' ] && echo 'YES' || echo 'NO')"
     
     - name: Check out action repo
       uses: actions/checkout@v4
