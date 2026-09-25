@@ -191,8 +191,6 @@ runComposer(['config', 'minimum-stability', 'dev'], { cwd: projectPath });
 runComposer(['config', 'prefer-stable', 'true'], { cwd: projectPath });
 runComposer(['require', '--dev', 'drupal/core-dev', 'drush/drush', 'fakerphp/faker'], { cwd: projectPath });
 
-setInstallerPath(projectPath, drupalModuleDir, composerPackageName);
-
 setComposerRepository(
   projectPath,
   repositoryName,
@@ -211,4 +209,6 @@ for (const entry of parseRepositoryEntries(env.COMPOSER_REPOSITORIES)) {
   setComposerRepository(projectPath, repository.name, repository.config);
 }
 
+setInstallerPath(projectPath, drupalModuleDir, composerPackageName);
 runComposer(['require', `${composerPackageName}:${repositoryRef}`, '-W'], { cwd: projectPath });
+setInstallerPath(projectPath, drupalModuleDir, composerPackageName);
