@@ -87,12 +87,18 @@ runs:
         mkdir -p ~/.ssh
         touch ~/.ssh/known_hosts
         ssh-keygen -F github.com -f ~/.ssh/known_hosts >/dev/null || ssh-keyscan -H github.com >> ~/.ssh/known_hosts
-    
+
+    - name: Evaluate action ref in safe context
+      shell: bash
+      env:
+        COMPUTED_REF: ${{ inputs.action_ref || github.action_ref || 'main' }}
+      run: echo "ACTION_REF=$COMPUTED_REF" >> $GITHUB_ENV
+
     - name: Check out action repo
       uses: actions/checkout@v4
       with:
         repository: nbey/drupal-custom-module-ci
-        ref: ${{ inputs.action_ref || github.action_ref || 'main' }}
+        ref: ${{ env.ACTION_REF }}
         path: .drupal-ci
 
     - name: Prepare Drupal project and Composer config
