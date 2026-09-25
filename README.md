@@ -114,7 +114,7 @@ Use the explicit inputs when the Drupal machine name, the installed directory, a
 | `composer_repositories` | No |  | Additional repositories to register before install. |
 | `composer_gh_pat` | No |  | Token for private GitHub Composer or VCS dependencies. |
 | `simpletest_db` | No | `mysql://root:root@mysql:3306/drupal_test` | Database DSN for the Drupal site install. |
-| `action_ref` | No | `main` | Useful when testing changes to this action itself. |
+| `action_ref` | No | current action ref | Overrides the internal checkout ref. Leave unset to use the same branch, tag, or SHA referenced in `uses:`. |
 
 ## Additional repository formats
 
