@@ -156,7 +156,8 @@ const composerPackageName = getOptionalEnv('COMPOSER_PACKAGE_NAME') || (() => {
     throw new Error('Missing Composer package name. Provide composer_package_name or module_vendor.');
   }
 
-  return `${composerVendor}/${repositoryName}`;
+  const legacyPackageSuffix = (getOptionalEnv('CUSTOM_MODULE_NAME') || drupalModuleName).replaceAll('_', '-');
+  return `${composerVendor}/${legacyPackageSuffix}`;
 })();
 
 console.log({

@@ -23,7 +23,7 @@ inputs:
     required: false
     default: ""
   drupal_module_dir:
-    description: "Drupal modules parent directory where the package should be installed"
+    description: "Drupal modules parent directory where the package should be installed. When omitted, falls back to the legacy module_dir input."
     required: false
     default: ""
   repo_name:
@@ -46,7 +46,7 @@ inputs:
   module_dir:
     description: "Deprecated alias for drupal_module_dir"
     required: false
-    default: "web/modules/custom"
+    default: "web/modules/acp-composer"
   project_dir:
     description: "Directory to install the Drupal project"
     required: false

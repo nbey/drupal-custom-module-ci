@@ -68,6 +68,7 @@ jobs:
         uses: nbey/drupal-custom-module-ci@main
         with:
           drupal_module_name: drupal_module
+          drupal_module_dir: web/modules/custom
           composer_package_name: nbey/drupal-module
           repo_name: drupal-module
           repo_org: nbey
@@ -100,9 +101,9 @@ Use the explicit inputs when the Drupal machine name, the installed directory, a
 | `drupal_module_name` | No |  | Preferred Drupal machine name input. |
 | `module_name` | No |  | Deprecated alias for `drupal_module_name`. |
 | `drupal_module_path` | No | `drupal_module_name` | Directory name used when locating `tests/src`. |
-| `drupal_module_dir` | No | `module_dir` | Preferred parent module directory input. |
-| `module_dir` | No | `web/modules/custom` | Deprecated alias for `drupal_module_dir`. |
-| `composer_package_name` | No | `<module_vendor>/<repo_name>` | Full Composer package name. |
+| `drupal_module_dir` | No | `module_dir` | Preferred parent module directory input. Set this explicitly in new workflows. |
+| `module_dir` | No | `web/modules/acp-composer` | Deprecated alias kept at its legacy default for backward compatibility. |
+| `composer_package_name` | No | `<module_vendor>/<module_name-with-hyphens>` | Full Composer package name. Set this explicitly when package naming differs from the Drupal module name. |
 | `module_vendor` | No |  | Fallback vendor used only when `composer_package_name` is omitted. |
 | `repo_name` | Yes |  | Repository slug used for VCS repository configuration. |
 | `repo_org` | Yes |  | GitHub owner used for VCS repository configuration. |
@@ -147,3 +148,9 @@ check these first:
 3. `repo_name`, `repo_org`, and `composer_package_name` match the actual repository and package naming.
 
 If PHPUnit cannot open the module tests directory, check `drupal_module_dir` and `drupal_module_path` first. Those values control the filesystem path used to locate `tests/src`.
+
+## Backward compatibility
+
+The new Drupal-versus-Composer inputs are additive. Existing workflows that still pass `module_name`, `module_dir`, and `module_vendor` continue to work with the legacy defaults and package-name fallback.
+
+For new workflows, prefer setting `drupal_module_name`, `drupal_module_dir`, `drupal_module_path`, and `composer_package_name` explicitly so there is no ambiguity.
