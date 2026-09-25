@@ -112,7 +112,8 @@ runs:
 
     - name: Debug - Show ref as checkout will receive it
       shell: bash
-      run: echo "Final ref being passed to checkout: ${{ env.ACTION_REF }}"
+      run: |
+        echo "Final ref being passed to checkout: ${{ env.ACTION_REF }}"
     
     - name: Check out action repo
       uses: actions/checkout@v4
