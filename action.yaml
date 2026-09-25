@@ -75,13 +75,6 @@ runs:
   using: "composite"
   steps:
 
-    - name: Set action ref variable
-      shell: bash
-      run: |
-        ref="${{ inputs.action_ref || github.action_ref || 'main' }}"
-        echo "ACTION_REF=$ref" >> $GITHUB_ENV
-        echo "DEBUG: ACTION_REF set to: $ref"
-
     - name: Fix git ownership
       shell: bash
       run: |
@@ -95,31 +88,11 @@ runs:
         touch ~/.ssh/known_hosts
         ssh-keygen -F github.com -f ~/.ssh/known_hosts >/dev/null || ssh-keyscan -H github.com >> ~/.ssh/known_hosts
 
-    - name: Debug - Evaluate ref in env context
-      shell: bash
-      env:
-        TEST_REF: ${{ inputs.action_ref || github.action_ref || 'main' }}
-      run: |
-        echo "Ref evaluated in env/with context: $TEST_REF"
-
-    - name: Debug - Show action ref values before checkout
-      shell: bash
-      run: |
-        echo "inputs.action_ref: '${{ inputs.action_ref }}'"
-        echo "github.action_ref: '${{ github.action_ref }}'"
-        echo "env.ACTION_REF: '${{ env.ACTION_REF }}'"
-        echo "Checkout will receive ref: $ACTION_REF"
-
-    - name: Debug - Show ref as checkout will receive it
-      shell: bash
-      run: |
-        echo "Final ref being passed to checkout: ${{ env.ACTION_REF }}"
-    
     - name: Check out action repo
       uses: actions/checkout@v4
       with:
         repository: nbey/drupal-custom-module-ci
-        ref: ${{ env.ACTION_REF }}
+        ref: ${{ inputs.action_ref || github.action_ref || 'main' }}
         path: .drupal-ci
 
     - name: Prepare Drupal project and Composer config
