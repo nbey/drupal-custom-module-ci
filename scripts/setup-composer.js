@@ -123,17 +123,21 @@ function setInstallerPath(projectPath, drupalModuleDir, composerPackageName) {
   const vendor = composerPackageName.split('/')[0];
   const installerPath = `${drupalModuleDir}/{$name}`;
   const vendorMatcher = `vendor:${vendor}`;
+  const installerPaths = composerJson.extra?.['installer-paths'] || {};
+  const existingMatchers = Array.isArray(installerPaths[installerPath])
+    ? installerPaths[installerPath]
+    : [];
+  const mergedMatchers = existingMatchers.includes(vendorMatcher)
+    ? existingMatchers
+    : [vendorMatcher, ...existingMatchers];
 
   composerJson.extra = composerJson.extra || {};
-  composerJson.extra['installer-paths'] = composerJson.extra['installer-paths'] || {};
-
-  if (!composerJson.extra['installer-paths'][installerPath]) {
-    composerJson.extra['installer-paths'][installerPath] = [];
-  }
-
-  if (!composerJson.extra['installer-paths'][installerPath].includes(vendorMatcher)) {
-    composerJson.extra['installer-paths'][installerPath].unshift(vendorMatcher);
-  }
+  composerJson.extra['installer-paths'] = {
+    [installerPath]: mergedMatchers,
+    ...Object.fromEntries(
+      Object.entries(installerPaths).filter(([configuredPath]) => configuredPath !== installerPath)
+    )
+  };
 
   writeJson(composerJsonPath, composerJson);
 }
