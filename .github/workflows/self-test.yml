@@ -47,6 +47,7 @@ jobs:
           action_ref: ${{ github.sha }}
           drupal_module_name: drupal_custom_module_ci_fixture
           drupal_module_path: drupal-custom-module-ci-fixture
+          drupal_module_dir: web/modules/custom
           composer_package_name: nbey/drupal-custom-module-ci-fixture
           repo_name: drupal-custom-module-ci-fixture
           repo_org: nbey
