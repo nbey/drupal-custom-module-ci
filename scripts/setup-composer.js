@@ -212,9 +212,9 @@ for (const entry of parseListEntries(env.COMPOSER_REPOSITORIES)) {
 
 setInstallerPath(projectPath, drupalModuleDir, composerPackageName);
 
-const extraPackages = parseListEntries(env.EXTRA_PACKAGES);
-if (extraPackages.length > 0) {
-  runComposer(['require', '--dev', ...extraPackages], { cwd: projectPath });
+const composerDevPackages = parseListEntries(env.COMPOSER_DEV_PACKAGES);
+if (composerDevPackages.length > 0) {
+  runComposer(['require', '--dev', ...composerDevPackages], { cwd: projectPath });
 }
 
 runComposer(['require', `${composerPackageName}:${repositoryRef}`, '-W'], { cwd: projectPath });
