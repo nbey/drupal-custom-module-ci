@@ -112,6 +112,7 @@ Use the explicit inputs when the Drupal machine name, the installed directory, a
 | `project_dir` | No | `/tmp/drupal-site` | Temporary Drupal project path created during the job. |
 | `working_directory` | No | `${{ github.workspace }}` | Local path repository for the module under test. |
 | `composer_repositories` | No |  | Additional repositories to register before install. |
+| `composer_dev_packages` | No |  | Composer packages to install as dev dependencies, one per line (for example `acp/user:^1.0`). |
 | `composer_gh_pat` | No |  | Token for private GitHub Composer or VCS dependencies. |
 | `simpletest_db` | No | `mysql://root:root@mysql:3306/drupal_test` | Database DSN for the Drupal site install. |
 | `action_ref` | No | current action ref | Overrides the internal checkout ref. Leave unset to use the same branch, tag, or SHA referenced in `uses:`. |

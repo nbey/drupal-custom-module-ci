@@ -59,8 +59,8 @@ function writeJson(filePath, value) {
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 4)}\n`);
 }
 
-function parseRepositoryEntries(rawRepositories) {
-  return (rawRepositories || '')
+function parseListEntries(rawEntries) {
+  return (rawEntries || '')
     .split('\n')
     .map((line) => line.replace(/^-\s*/, '').trim())
     .filter((line) => line.length > 0 && !line.startsWith('#'));
@@ -205,11 +205,17 @@ setComposerRepository(
       }
 );
 
-for (const entry of parseRepositoryEntries(env.COMPOSER_REPOSITORIES)) {
+for (const entry of parseListEntries(env.COMPOSER_REPOSITORIES)) {
   const repository = buildExtraRepository(entry, repositoryOrg);
   setComposerRepository(projectPath, repository.name, repository.config);
 }
 
 setInstallerPath(projectPath, drupalModuleDir, composerPackageName);
+
+const composerDevPackages = parseListEntries(env.COMPOSER_DEV_PACKAGES);
+if (composerDevPackages.length > 0) {
+  runComposer(['require', '--dev', ...composerDevPackages], { cwd: projectPath });
+}
+
 runComposer(['require', `${composerPackageName}:${repositoryRef}`, '-W'], { cwd: projectPath });
 setInstallerPath(projectPath, drupalModuleDir, composerPackageName);
