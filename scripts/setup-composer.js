@@ -189,7 +189,8 @@ if (composerGhPat) {
 runComposer(['config', 'allow-plugins.tbachert/spi', 'true'], { cwd: projectPath });
 runComposer(['config', 'minimum-stability', 'dev'], { cwd: projectPath });
 runComposer(['config', 'prefer-stable', 'true'], { cwd: projectPath });
-runComposer(['require', '--dev', 'drupal/core-dev', 'drush/drush', 'fakerphp/faker'], { cwd: projectPath });
+// consolidation/robo 5.2.1 breaks the drush 13.6.2 bootstrap; keep this pair until verified.
+runComposer(['require', '--dev', 'drupal/core-dev', 'drush/drush:13.6.2', 'consolidation/robo:5.1.1', 'fakerphp/faker'], { cwd: projectPath });
 
 setComposerRepository(
   projectPath,
