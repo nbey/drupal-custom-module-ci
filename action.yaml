@@ -234,6 +234,32 @@ runs:
         cat /tmp/drupal-php-server.log || true
         exit 1
 
+    - name: Run PHPUnit with coverage
+      id: run_tests
+      shell: bash
+      working-directory: ${{ inputs.project_dir }}/web
+      continue-on-error: true
+      run: |
+        module_dir="${{ inputs.drupal_module_dir || inputs.module_dir }}"
+        module_path="${{ inputs.drupal_module_path || inputs.drupal_module_name || inputs.module_name }}"
+        tests_path="${module_dir#web/}/${module_path}/tests/src"
+
+        if [ -z "${module_path}" ]; then
+          echo "Missing drupal_module_path or drupal_module_name/module_name input."
+          exit 1
+        fi
+
+        if [ ! -d "${tests_path}" ]; then
+          echo "Resolved PHPUnit tests path does not exist: ${tests_path}"
+          echo "Module diagnostics:"
+          cat /tmp/drupal-ci-module-diagnostics.txt || true
+          exit 1
+        fi
+
+        ../vendor/bin/phpunit -c core/phpunit.xml.dist -v --color --testdox \
+        --coverage-html /tmp/coverage \
+        "${tests_path}"
+
     - name: Install Playwright and dependencies
       if: ${{ inputs.playwright_tests_dir != '' }}
       shell: bash
@@ -281,32 +307,6 @@ runs:
         name: playwright-report
         path: ${{ inputs.working_directory }}/${{ inputs.playwright_tests_dir }}/playwright-report/
         if-no-files-found: ignore
-
-    - name: Run PHPUnit with coverage
-      id: run_tests
-      shell: bash
-      working-directory: ${{ inputs.project_dir }}/web
-      continue-on-error: true
-      run: |
-        module_dir="${{ inputs.drupal_module_dir || inputs.module_dir }}"
-        module_path="${{ inputs.drupal_module_path || inputs.drupal_module_name || inputs.module_name }}"
-        tests_path="${module_dir#web/}/${module_path}/tests/src"
-
-        if [ -z "${module_path}" ]; then
-          echo "Missing drupal_module_path or drupal_module_name/module_name input."
-          exit 1
-        fi
-
-        if [ ! -d "${tests_path}" ]; then
-          echo "Resolved PHPUnit tests path does not exist: ${tests_path}"
-          echo "Module diagnostics:"
-          cat /tmp/drupal-ci-module-diagnostics.txt || true
-          exit 1
-        fi
-
-        ../vendor/bin/phpunit -c core/phpunit.xml.dist -v --color --testdox \
-        --coverage-html /tmp/coverage \
-        "${tests_path}"
 
     - name: Upload coverage artifact
       uses: actions/upload-artifact@v4
