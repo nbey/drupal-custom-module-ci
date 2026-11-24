@@ -207,6 +207,13 @@ setComposerRepository(
 
 for (const entry of parseListEntries(env.COMPOSER_REPOSITORIES)) {
   const repository = buildExtraRepository(entry, repositoryOrg);
+  
+  // When using a path repo (local module), exclude the package from custom repos
+  // to ensure we always use the path repo version instead of a stale version
+  if (workingDirectory) {
+    repository.config.exclude = [composerPackageName];
+  }
+  
   setComposerRepository(projectPath, repository.name, repository.config);
 }
 
