@@ -70,6 +70,10 @@ inputs:
     description: "Path to the checked-out module repository. Defaults to github.workspace for local path installation."
     required: false
     default: ${{ github.workspace }}
+  playwright_tests_dir:
+    description: "Path to Playwright tests directory (relative to working_directory). If provided, Playwright tests will run before PHPUnit tests."
+    required: false
+    default: ""
   debug:
     description: "Enable verbose module path diagnostics output and artifacts"
     required: false
@@ -230,6 +234,54 @@ runs:
         cat /tmp/drupal-php-server.log || true
         exit 1
 
+    - name: Install Playwright and dependencies
+      if: ${{ inputs.playwright_tests_dir != '' }}
+      shell: bash
+      env:
+        PLAYWRIGHT_TESTS_DIR: ${{ inputs.playwright_tests_dir }}
+        WORKING_DIR: ${{ inputs.working_directory }}
+      run: |
+        tests_dir="${WORKING_DIR}/${PLAYWRIGHT_TESTS_DIR}"
+        
+        if [ ! -d "${tests_dir}" ]; then
+          echo "Playwright tests directory not found: ${tests_dir}"
+          exit 1
+        fi
+
+        cd "${tests_dir}"
+        
+        if [ -f "package.json" ]; then
+          npm install
+          npx playwright install
+        else
+          echo "package.json not found in playwright tests directory"
+          exit 1
+        fi
+
+    - name: Run Playwright tests
+      id: run_playwright_tests
+      if: ${{ inputs.playwright_tests_dir != '' }}
+      shell: bash
+      env:
+        PLAYWRIGHT_TESTS_DIR: ${{ inputs.playwright_tests_dir }}
+        WORKING_DIR: ${{ inputs.working_directory }}
+        PLAYWRIGHT_BASE_URL: http://127.0.0.1
+      continue-on-error: true
+      run: |
+        tests_dir="${WORKING_DIR}/${PLAYWRIGHT_TESTS_DIR}"
+        
+        cd "${tests_dir}"
+        
+        npx playwright test
+
+    - name: Upload Playwright report
+      if: ${{ always() && inputs.playwright_tests_dir != '' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: playwright-report
+        path: ${{ inputs.working_directory }}/${{ inputs.playwright_tests_dir }}/playwright-report/
+        if-no-files-found: ignore
+
     - name: Run PHPUnit with coverage
       id: run_tests
       shell: bash
@@ -278,5 +330,5 @@ runs:
 
     - name: Fail the job if tests failed
       shell: bash
-      if: steps.run_tests.outcome == 'failure'  # Re-fail the job after upload
+      if: steps.run_tests.outcome == 'failure' || steps.run_playwright_tests.outcome == 'failure'
       run: exit 1
